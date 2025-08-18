@@ -44,9 +44,9 @@ export default function AdminLogin() {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <Link href="/" className="inline-block mb-6">
-            <Logo size="lg" className="mx-auto filter brightness-0 invert" />
-          </Link>
+          <div className="flex justify-center mb-8">
+            <Logo size="auth" href="/" className="filter brightness-0 invert" />
+          </div>
           <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-transparent bg-clip-text">
             <h2 className="text-3xl lg:text-4xl font-bold">
               Admin Portal

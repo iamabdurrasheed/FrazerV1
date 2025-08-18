@@ -80,9 +80,9 @@ export default function UserRegister() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
-            <Logo size="lg" className="mx-auto" />
-          </Link>
+          <div className="flex justify-center mb-8">
+            <Logo size="auth" href="/" className="" />
+          </div>
           <h2 className="text-3xl lg:text-4xl font-bold text-black">
             Create Your Account
           </h2>

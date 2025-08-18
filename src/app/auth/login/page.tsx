@@ -130,12 +130,14 @@ export default function UserLoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <Logo className="h-16 w-auto mx-auto mb-6" />
+          <div className="flex justify-center mb-8">
+            <Logo size="auth" className="" />
+          </div>
           <h2 className="text-black text-3xl font-bold">
-            Welcome back
+            Log in
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to access your account
+            Access your account
           </p>
         </div>
 
@@ -370,14 +372,14 @@ export default function UserLoginPage() {
               {loading || otpLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  {otpLoading ? 'Sending OTP...' : 'Signing in...'}
+                  {otpLoading ? 'Sending OTP...' : 'Logging in...'}
                 </div>
               ) : (
                 <div className="flex items-center">
                   {authMethod === 'password' 
-                    ? 'Sign in' 
+                    ? 'Log in' 
                     : otpSent 
-                      ? 'Verify & Sign in' 
+                      ? 'Verify & Log in' 
                       : 'Send OTP'
                   }
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -393,7 +395,7 @@ export default function UserLoginPage() {
               onClick={() => setShowAlternatives(!showAlternatives)}
               className="w-full flex items-center justify-center py-2 px-4 text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200"
             >
-              <span>Try another way to sign in</span>
+              <span>Try another way to log in</span>
               <ChevronDown className={`ml-2 h-4 w-4 transition-transform duration-200 ${showAlternatives ? 'rotate-180' : ''}`} />
             </button>
 

@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
             <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
               <div className="mb-4 sm:mb-6">
                 {/* Logo */}
-                <div className="mb-4 sm:mb-6">
+                <div className="mb-4 sm:mb-6 flex justify-start">
                   <Logo size="lg" className="hover:scale-110 transition-transform duration-300" />
                 </div>
                 <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed max-w-md">
