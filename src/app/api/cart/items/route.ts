@@ -3,6 +3,38 @@ import { db } from '@/lib/db';
 import { cartItemsTable, productsTable, cartTable } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
 
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const cartId = searchParams.get('cartId');
+
+    if (!cartId) {
+      return NextResponse.json({ items: [] });
+    }
+
+    const cart = await db.query.cartTable.findFirst({
+      where: eq(cartTable.id, cartId),
+      with: {
+        items: {
+          with: {
+            product: true
+          }
+        }
+      }
+    });
+
+    if (!cart) {
+      return NextResponse.json({ items: [] });
+    }
+
+    return NextResponse.json({ items: cart.items || [] });
+
+  } catch (error) {
+    console.error('Error fetching cart items:', error);
+    return NextResponse.json({ items: [] });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

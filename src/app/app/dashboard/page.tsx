@@ -11,7 +11,7 @@ export default function UserDashboard() {
   useEffect(() => {
     if (status === 'loading') return;
     if (!session || session.user.role !== 'user') {
-      router.push('/auth/user/login');
+      router.push('/auth/login');
     }
   }, [session, status, router]);
 

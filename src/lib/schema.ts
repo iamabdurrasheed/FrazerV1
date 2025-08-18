@@ -77,6 +77,7 @@ export const productOffersTable = pgTable('product_offers', {
 export const usersTable = pgTable('users', {
   id: serial('id').primaryKey(),
   email: text('email').notNull().unique(),
+  password: text('password'), // Optional for OTP-only users
   name: text('name').notNull(),
   phone: text('phone'),
   address: text('address'),
