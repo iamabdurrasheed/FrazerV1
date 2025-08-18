@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { usersTable } from '@/lib/schema';
 import { eq, like, desc, and } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,11 +57,19 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, name, phone, address, city, state, zipCode, country = 'US' } = body;
+    const { email, name, phone, password, address, city, state, zipCode, country = 'US' } = body;
 
     if (!email || !name) {
       return NextResponse.json(
         { error: 'Email and name are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password if provided
+    if (password && password.length < 6) {
+      return NextResponse.json(
+        { error: 'Password must be at least 6 characters long' },
         { status: 400 }
       );
     }
@@ -76,10 +85,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Hash password if provided
+    let hashedPassword = null;
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
     const [user] = await db.insert(usersTable).values({
       email,
       name,
       phone,
+      password: hashedPassword,
       address,
       city,
       state,
@@ -87,7 +103,10 @@ export async function POST(request: NextRequest) {
       country
     }).returning();
 
-    return NextResponse.json(user, { status: 201 });
+    // Remove password from response
+    const { password: _, ...userResponse } = user;
+
+    return NextResponse.json(userResponse, { status: 201 });
 
   } catch (error) {
     console.error('Error creating user:', error);

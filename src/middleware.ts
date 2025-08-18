@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
   const tenant = getTenantFromPath(pathname);
   
   // Public routes that don't require authentication
-  const publicRoutes = ['/', '/api/auth', '/auth'];
+  const publicRoutes = ['/', '/api/auth', '/auth', '/products', '/categories', '/contact', '/about', '/api/products', '/api/categories'];
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
   
   if (isPublicRoute) {
@@ -41,7 +41,7 @@ export async function middleware(request: NextRequest) {
     });
     
     if (!token || token.role !== 'user') {
-      return NextResponse.redirect(new URL('/auth/user/login', request.url));
+      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
     
     // Add tenant context to headers
@@ -52,8 +52,11 @@ export async function middleware(request: NextRequest) {
   
   // API routes protection
   if (pathname.startsWith('/api/')) {
-    // Skip auth API routes
-    if (pathname.startsWith('/api/auth')) {
+    // Skip auth API routes and public API routes
+    if (pathname.startsWith('/api/auth') || 
+        pathname.startsWith('/api/products') || 
+        pathname.startsWith('/api/categories') ||
+        pathname.startsWith('/api/offers')) {
       return NextResponse.next();
     }
     
@@ -71,9 +74,11 @@ export async function middleware(request: NextRequest) {
         );
       }
     }
-    
-    // User API routes (most API routes are user-accessible)
-    if (!pathname.startsWith('/api/admin/')) {
+
+    // User-protected API routes (cart, orders, etc.)
+    if (pathname.startsWith('/api/cart') || 
+        pathname.startsWith('/api/orders') || 
+        pathname.startsWith('/api/users')) {
       const token = await getToken({ 
         req: request, 
         secret: process.env.NEXTAUTH_SECRET 

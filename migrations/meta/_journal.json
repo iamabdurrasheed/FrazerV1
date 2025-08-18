@@ -8,6 +8,13 @@
       "when": 1755445371303,
       "tag": "0000_flat_scarlet_spider",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1755544090215,
+      "tag": "0001_talented_agent_brand",
+      "breakpoints": true
     }
   ]
 }

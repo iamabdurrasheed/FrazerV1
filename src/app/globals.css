@@ -3,6 +3,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Cart Sidebar Responsive Styles */
+@media (min-width: 768px) {
+  body.cart-sidebar-open {
+    margin-right: 320px;
+    transition: margin-right 0.3s ease-in-out;
+  }
+}
+
+@media (min-width: 1024px) {
+  body.cart-sidebar-open {
+    margin-right: 384px;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
