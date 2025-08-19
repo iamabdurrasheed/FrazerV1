@@ -315,6 +315,196 @@ export default function ContactPage() {
         </div>
       </div>
 
+      {/* Map Section */}
+      <section className="relative bg-gradient-to-b from-white to-gray-50 py-8 sm:py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">
+              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent mb-4">
+              Visit Our Showroom
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Experience our comprehensive range of industrial and building materials at our modern facility in Ajman
+            </p>
+          </div>
+          
+          {/* Map Container */}
+          <div className="relative">
+            {/* Background Decoration */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-3xl blur-xl"></div>
+            
+            <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+              {/* Map - Balanced Size */}
+              <div className="relative">
+                <div className="w-full h-64 sm:h-80 md:h-96 lg:h-[450px]">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d115593.82556350656!2d55.4135393!3d25.3869186!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ef5f7f78eb225f7%3A0x904a763956725153!2sAl%20Rawda%203%20-%20Ajman%20-%20United%20Arab%20Emirates!5e0!3m2!1sen!2s!4v1692434567890!5m2!1sen!2s"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen={true}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="w-full h-full rounded-t-2xl"
+                    title="Frazer BMT Location - Al Rawda 3, Ajman"
+                  ></iframe>
+                </div>
+                
+                {/* Map Overlay Info Card - Repositioned */}
+                <div className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-4 sm:p-5 max-w-xs border border-white/20">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm">Frazer BMT</h3>
+                      <p className="text-xs text-gray-600 mt-1">Industrial & Building Materials</p>
+                      <p className="text-xs text-blue-600 mt-1 font-medium">Open Now</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Redesigned Store Information - More Compact and Better Layout */}
+              <div className="bg-gradient-to-r from-gray-50 to-white p-6 sm:p-8">
+                <div className="max-w-6xl mx-auto">
+                  
+                  {/* Top Row - Location and Contact Side by Side */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    
+                    {/* Location */}
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                      <div className="flex items-center mb-4">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900">Our Location</h3>
+                      </div>
+                      <p className="text-gray-700 leading-relaxed text-lg">
+                        Al Rawda 3<br />
+                        Ajman, United Arab Emirates
+                      </p>
+                    </div>
+                    
+                    {/* Contact */}
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                      <div className="flex items-center mb-4">
+                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21L6.16 10.9a11.042 11.042 0 005.93 5.93l1.513-4.064a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900">Contact Info</h3>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center">
+                          <span className="text-gray-600 w-12">Phone:</span>
+                          <a href="tel:+971-XXX-XXXX" className="text-gray-900 font-medium hover:text-blue-600 transition-colors">+971-XXX-XXXX</a>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="text-gray-600 w-12">Email:</span>
+                          <a href="mailto:sales@frazerbmt.com" className="text-gray-900 font-medium hover:text-blue-600 transition-colors">sales@frazerbmt.com</a>
+                        </div>
+                      </div>
+                    </div>
+                    
+                  </div>
+                  
+                  {/* Bottom Row - Business Hours and Actions */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    {/* Business Hours */}
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                      <div className="flex items-center mb-6">
+                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                          <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900">Business Hours</h3>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                          <span className="text-gray-700 font-medium">Monday - Friday</span>
+                          <span className="text-gray-900 font-bold bg-green-100 px-3 py-1 rounded-full text-sm">8:00 AM - 6:00 PM</span>
+                        </div>
+                        <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                          <span className="text-gray-700 font-medium">Saturday</span>
+                          <span className="text-gray-900 font-bold bg-blue-100 px-3 py-1 rounded-full text-sm">8:00 AM - 4:00 PM</span>
+                        </div>
+                        <div className="flex justify-between items-center py-3">
+                          <span className="text-gray-700 font-medium">Sunday</span>
+                          <span className="text-red-600 font-bold bg-red-100 px-3 py-1 rounded-full text-sm">Closed</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Quick Actions */}
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                      <div className="flex items-center mb-6">
+                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                          <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900">Quick Actions</h3>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <a 
+                          href="https://www.google.com/maps/dir//Al+Rawda+3+-+Ajman+-+United+Arab+Emirates/@25.3869186,55.4135393,23039m/data=!3m1!1e3!4m8!4m7!1m0!1m5!1m1!1s0x3ef5f7f78eb225f7:0x904a763956725153!2m2!1d55.4959408!2d25.3869416?entry=ttu"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold text-lg"
+                        >
+                          <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
+                          </svg>
+                          Get Directions
+                        </a>
+                        
+                        <a 
+                          href="tel:+971-XXX-XXXX"
+                          className="flex items-center justify-center w-full px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold text-lg"
+                        >
+                          <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21L6.16 10.9a11.042 11.042 0 005.93 5.93l1.513-4.064a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          Call Now
+                        </a>
+                        
+                        <a 
+                          href="mailto:sales@frazerbmt.com"
+                          className="flex items-center justify-center w-full px-6 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold text-lg"
+                        >
+                          <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          Send Email
+                        </a>
+                      </div>
+                    </div>
+                    
+                  </div>
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );
