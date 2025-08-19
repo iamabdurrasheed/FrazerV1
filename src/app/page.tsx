@@ -38,7 +38,7 @@ export default function Home() {
       isHero: true
     },
     {
-      title: "From ABB Industriovate",
+      title: "ABB Industriovate",
       subtitle: "Powering industrial innovation with ABB's advanced control solutions global expertise, reliable performance, and cutting-edge efficiency.",
       image: "/ABB%20sol.jpg",
       backgroundColor: "bg-gradient-to-r from-slate-400 to-slate-500",
