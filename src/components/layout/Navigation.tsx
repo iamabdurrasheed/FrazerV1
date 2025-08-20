@@ -6,10 +6,12 @@ import { usePathname } from 'next/navigation';
 import Logo from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { industrialCategories, Category } from '@/lib/industrial-categories';
 
 const Navigation: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const { itemCount } = useCart();
   const pathname = usePathname();
 
@@ -47,7 +49,7 @@ const Navigation: React.FC = () => {
             <div className="flex items-center">
               {/* Logo */}
               <Link href="/" className="flex-shrink-0 mr-3 transition-transform duration-300 hover:scale-105">
-                <Logo size="nav" />
+                <Logo size="nav" href="" />
               </Link>
               
               {/* Desktop Navigation */}
@@ -213,6 +215,72 @@ const Navigation: React.FC = () => {
           </div>
         </div>
       </nav>
+
+      {/* Industrial Categories Mega Menu */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12">
+          <div className="flex items-center justify-center">
+            <div className="hidden md:flex md:space-x-1 lg:space-x-2 xl:space-x-4 py-3">
+              {industrialCategories.map((category) => (
+                <div
+                  key={category.id}
+                  className="relative group"
+                  onMouseEnter={() => setHoveredCategory(category.id)}
+                  onMouseLeave={() => setHoveredCategory(null)}
+                >
+                  <Link
+                    href={`/products?category=${category.slug}`}
+                    className="flex items-center px-3 lg:px-4 py-2 text-sm lg:text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-300"
+                  >
+                    {category.name}
+                    <svg className="ml-1 h-4 w-4 transform group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </Link>
+
+                  {/* Mega Menu Dropdown */}
+                  {hoveredCategory === category.id && (
+                    <div className="absolute top-full left-0 w-80 lg:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 mt-1 transform opacity-100 scale-100 transition-all duration-300">
+                      <div className="p-6">
+                        <div className="mb-4">
+                          <h3 className="text-lg font-bold text-gray-900 mb-2">{category.name}</h3>
+                          <p className="text-sm text-gray-600">{category.description}</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-2 max-h-80 overflow-y-auto">
+                          {category.subcategories.map((subcategory) => (
+                            <Link
+                              key={subcategory.id}
+                              href={`/products?category=${category.slug}&subcategory=${subcategory.slug}`}
+                              className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                            >
+                              <div>
+                                <div className="font-medium text-gray-900 text-sm">{subcategory.name}</div>
+                                {subcategory.description && (
+                                  <div className="text-xs text-gray-500 mt-1">{subcategory.description}</div>
+                                )}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <Link
+                            href={`/products?category=${category.slug}`}
+                            className="block w-full text-center bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200"
+                          >
+                            View All {category.name}
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

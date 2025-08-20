@@ -7,18 +7,26 @@ import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
+import { industrialCategories, getCategoryById, getPriceRangeForCategory, getAllSubcategories } from '@/lib/industrial-categories';
 
 interface Product {
   id: number;
   name: string;
   description?: string;
+  shortDescription?: string;
   price: string;
   originalPrice?: string;
   sku: string;
+  brand?: string;
+  model?: string;
   stockQuantity: number;
+  minOrderQuantity?: number;
+  unit?: string;
+  specifications?: Record<string, string>;
   categoryId: number;
   images?: string[];
   isActive: boolean;
+  isFeatured?: boolean;
   createdAt: string;
   updatedAt: string;
   category?: {
@@ -50,29 +58,43 @@ export default function ProductsPage() {
     removeFromCart 
   } = useCart();
   const categoryFilter = searchParams.get('category');
+  const subcategoryFilter = searchParams.get('subcategory');
   
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(categoryFilter || '');
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [selectedSubcategory, setSelectedSubcategory] = useState(subcategoryFilter || '');
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
+  const [selectedBrand, setSelectedBrand] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [addingToCart, setAddingToCart] = useState<number | null>(null);
 
+  // Dynamic price range based on selected category/subcategory
+  const dynamicPriceRange = React.useMemo(() => {
+    return getPriceRangeForCategory(selectedCategory, selectedSubcategory);
+  }, [selectedCategory, selectedSubcategory]);
+
+  // Update price range when category changes
+  useEffect(() => {
+    setPriceRange(dynamicPriceRange);
+  }, [dynamicPriceRange]);
+
+  // Get available subcategories for selected category
+  const availableSubcategories = React.useMemo(() => {
+    const category = getCategoryById(selectedCategory);
+    return category?.subcategories || [];
+  }, [selectedCategory]);
+
+  // Get all categories with "All Categories" option
   const categories = [
     { id: '', name: 'All Categories', slug: '' },
-    { id: '1', name: 'HVAC Products', slug: 'hvac' },
-    { id: '2', name: 'Valves & Fittings', slug: 'valves' },
-    { id: '3', name: 'Electrical Equipment', slug: 'electrical' },
-    { id: '4', name: 'Plumbing & Pipes', slug: 'plumbing' },
-    { id: '5', name: 'Adhesives & Sealants', slug: 'adhesives' },
-    { id: '6', name: 'Pump Components', slug: 'pumps' },
-    { id: '7', name: 'Welding Supplies', slug: 'welding' },
-    { id: '8', name: 'Thermal Solutions', slug: 'thermal' },
-    { id: '9', name: 'Solar Energy', slug: 'solar' },
-    { id: '10', name: 'Safety Equipment', slug: 'safety' },
-    { id: '11', name: 'Industrial Tools', slug: 'tools' }
+    ...industrialCategories.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug
+    }))
   ];
 
   useEffect(() => {
@@ -83,7 +105,41 @@ export default function ProductsPage() {
     if (categoryFilter) {
       setSelectedCategory(categoryFilter);
     }
-  }, [categoryFilter]);
+    if (subcategoryFilter) {
+      setSelectedSubcategory(subcategoryFilter);
+    }
+  }, [categoryFilter, subcategoryFilter]);
+
+  // Handle category change and update URL
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setSelectedSubcategory(''); // Reset subcategory when category changes
+    
+    // Update URL parameters
+    const params = new URLSearchParams(searchParams.toString());
+    if (categoryId) {
+      params.set('category', categoryId);
+    } else {
+      params.delete('category');
+    }
+    params.delete('subcategory'); // Remove subcategory when category changes
+    
+    router.push(`/products?${params.toString()}`);
+  };
+
+  // Handle subcategory change and update URL
+  const handleSubcategoryChange = (subcategoryId: string) => {
+    setSelectedSubcategory(subcategoryId);
+    
+    const params = new URLSearchParams(searchParams.toString());
+    if (subcategoryId) {
+      params.set('subcategory', subcategoryId);
+    } else {
+      params.delete('subcategory');
+    }
+    
+    router.push(`/products?${params.toString()}`);
+  };
 
   const fetchProducts = async () => {
     try {
@@ -108,29 +164,38 @@ export default function ProductsPage() {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()));
+                         (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (product.brand && product.brand.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (product.model && product.model.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = !selectedCategory || product.categoryId.toString() === selectedCategory;
+    const matchesBrand = !selectedBrand || (product.brand && product.brand.toLowerCase() === selectedBrand.toLowerCase());
     const productPrice = parseFloat(product.price);
-    const matchesPrice = (!priceRange.min || productPrice >= Number(priceRange.min)) &&
-                        (!priceRange.max || productPrice <= Number(priceRange.max));
+    const matchesPrice = productPrice >= priceRange.min && productPrice <= priceRange.max;
     
-    return matchesSearch && matchesCategory && matchesPrice;
+    return matchesSearch && matchesCategory && matchesBrand && matchesPrice;
   }).sort((a, b) => {
     switch (sortBy) {
       case 'price-low':
         return parseFloat(a.price) - parseFloat(b.price);
       case 'price-high':
         return parseFloat(b.price) - parseFloat(a.price);
+      case 'brand':
+        return (a.brand || '').localeCompare(b.brand || '');
       case 'name':
       default:
         return a.name.localeCompare(b.name);
     }
   });
 
+  // Get unique brands from products
+  const availableBrands = Array.from(new Set(products.map(p => p.brand).filter(Boolean))).sort();
+
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('');
-    setPriceRange({ min: '', max: '' });
+    setSelectedSubcategory('');
+    setPriceRange({ min: 0, max: 10000 });
+    setSelectedBrand('');
     setSortBy('name');
   };
 
@@ -181,20 +246,20 @@ export default function ProductsPage() {
     <div className="bg-white min-h-screen w-full overflow-x-hidden">
       <Navigation />
       
-      {/* Professional Header - No Hero */}
+      {/* Compact Professional Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">
                 Industrial Products
               </h1>
-              <p className="text-gray-600 text-lg">
+              <p className="text-gray-600">
                 High-quality industrial and building materials from trusted manufacturers
               </p>
             </div>
-            <div className="mt-4 lg:mt-0">
-              <span className="bg-blue-100 text-blue-800 px-6 py-3 rounded-full text-sm font-semibold">
+            <div className="mt-2 lg:mt-0">
+              <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold">
                 {products.length} Products Available
               </span>
             </div>
@@ -202,43 +267,76 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Search and Filters Section */}
-      <div className="border-b border-gray-200 sticky top-0 z-40 backdrop-blur-md bg-gray-50/95">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
-          {/* Search Bar */}
-          <div className="mb-6">
-            <div className="relative max-w-2xl mx-auto">
+      {/* Compact Horizontal Filters Bar */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-40 backdrop-blur-md bg-white/95 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
+          {/* Search Bar - Single Row */}
+          <div className="flex flex-col lg:flex-row gap-4 mb-4">
+            <div className="flex-1 relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
               <input
                 type="text"
-                placeholder="Search products, categories..."
+                placeholder="Search for industrial products, brands, models..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-lg"
+                className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500"
               />
-              <svg className="absolute left-4 top-4 h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-4 top-4 h-6 w-6 text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               )}
             </div>
+            
+            {/* View Toggle - Moved to search row */}
+            <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`flex items-center px-3 py-2 rounded-md font-medium transition-all duration-300 ${
+                  viewMode === 'grid'
+                    ? 'bg-blue-500 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white'
+                }`}
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                Grid
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center px-3 py-2 rounded-md font-medium transition-all duration-300 ${
+                  viewMode === 'list'
+                    ? 'bg-blue-500 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white'
+                }`}
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                List
+              </button>
+            </div>
           </div>
 
-          {/* Filters Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+          {/* Horizontal Compact Filters Row */}
+          <div className="flex flex-wrap items-center gap-3">
             {/* Category Filter */}
-            <div className="lg:col-span-2">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Category:</label>
               <select
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 font-medium"
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm min-w-[140px]"
               >
                 {categories.map(category => (
                   <option key={category.id} value={category.id}>
@@ -248,82 +346,161 @@ export default function ProductsPage() {
               </select>
             </div>
 
-            {/* Price Range */}
-            <div className="flex space-x-2 lg:col-span-2">
-              <input
-                type="number"
-                placeholder="Min AED"
-                value={priceRange.min}
-                onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
-                className="w-full px-3 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <input
-                type="number"
-                placeholder="Max AED"
-                value={priceRange.max}
-                onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
-                className="w-full px-3 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+            {/* Subcategory Filter - Only show if category is selected */}
+            {selectedCategory && availableSubcategories.length > 0 && (
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Subcategory:</label>
+                <select
+                  value={selectedSubcategory}
+                  onChange={(e) => handleSubcategoryChange(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm min-w-[140px]"
+                >
+                  <option value="">All Subcategories</option>
+                  {availableSubcategories.map(subcategory => (
+                    <option key={subcategory.id} value={subcategory.id}>
+                      {subcategory.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Brand Filter */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Brand:</label>
+              <select
+                value={selectedBrand}
+                onChange={(e) => setSelectedBrand(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm min-w-[120px]"
+              >
+                <option value="">All Brands</option>
+                {availableBrands.map(brand => (
+                  <option key={brand} value={brand}>
+                    {brand}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Sort */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 font-medium"
-            >
-              <option value="name">Sort by Name</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-            </select>
+            {/* Price Range */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Price:</label>
+              <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-300">
+                <span className="text-sm text-gray-600">{priceRange.min}</span>
+                <input
+                  type="range"
+                  min={dynamicPriceRange.min}
+                  max={dynamicPriceRange.max}
+                  step="10"
+                  value={Math.max(priceRange.min, dynamicPriceRange.min)}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (value <= priceRange.max) {
+                      setPriceRange(prev => ({ ...prev, min: value }));
+                    }
+                  }}
+                  className="w-16 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <span className="text-sm text-gray-600">-</span>
+                <input
+                  type="range"
+                  min={dynamicPriceRange.min}
+                  max={dynamicPriceRange.max}
+                  step="10"
+                  value={Math.min(priceRange.max, dynamicPriceRange.max)}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (value >= priceRange.min) {
+                      setPriceRange(prev => ({ ...prev, max: value }));
+                    }
+                  }}
+                  className="w-16 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <span className="text-sm text-gray-600">{priceRange.max}</span>
+                <span className="text-xs text-gray-500 ml-1">AED</span>
+              </div>
+            </div>
+
+            {/* Sort By */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort:</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm min-w-[140px]"
+              >
+                <option value="name">Name A-Z</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="brand">Brand A-Z</option>
+              </select>
+            </div>
 
             {/* Clear Filters */}
             <Button
               onClick={clearFilters}
               variant="outline"
-              className="border-2 border-gray-300 hover:border-blue-500 hover:text-blue-500 font-medium py-3"
+              className="px-3 py-2 border border-gray-300 hover:border-red-400 hover:text-red-600 hover:bg-red-50 transition-all duration-300 rounded-lg text-sm"
             >
-              Clear All
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Clear
             </Button>
           </div>
 
-          {/* Results Summary and View Toggle */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-lg font-semibold text-gray-900">
-                {filteredProducts.length} of {products.length} products
-              </span>
-              {selectedCategory && (
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                  {categories.find(c => c.id === selectedCategory)?.name}
-                </span>
-              )}
-            </div>
-            
-            <div className="flex items-center space-x-2 bg-white rounded-lg border-2 border-gray-300 p-1">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                </svg>
-              </button>
+          {/* Results Summary and Active Filters */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold text-gray-900">{filteredProducts.length}</span> of {products.length} products
+              </div>
+              
+              {/* Active Filter Tags */}
+              <div className="flex flex-wrap gap-2">
+                {selectedCategory && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                    {categories.find(c => c.id === selectedCategory)?.name}
+                    <button
+                      onClick={() => setSelectedCategory('')}
+                      className="ml-1 text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                
+                {selectedBrand && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">
+                    {selectedBrand}
+                    <button
+                      onClick={() => setSelectedBrand('')}
+                      className="ml-1 text-green-600 hover:text-green-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                
+                {searchTerm && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-100 text-purple-800">
+                    "{searchTerm}"
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="ml-1 text-purple-600 hover:text-purple-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Products Section */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-16">
+      {/* Products Section - Much closer to filters */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
         {loading ? (
           <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1'}`}>
             {[...Array(8)].map((_, index) => (
@@ -371,18 +548,50 @@ export default function ProductsPage() {
                   {/* Product Details */}
                   <div className={`${viewMode === 'grid' ? 'flex-1 p-6' : 'flex-1'} flex flex-col justify-between`}>
                     <div className="flex-1">
+                      {/* Brand and Model */}
+                      {(product.brand || product.model) && (
+                        <div className="flex items-center space-x-2 mb-2">
+                          {product.brand && (
+                            <span className="bg-gray-100 text-gray-700 px-2 py-1 text-xs font-semibold rounded-md uppercase">
+                              {product.brand}
+                            </span>
+                          )}
+                          {product.model && (
+                            <span className="text-gray-500 text-xs">
+                              Model: {product.model}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
                       <h3 className={`font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300 ${viewMode === 'grid' ? 'text-lg' : 'text-xl'}`}>
                         {product.name}
                       </h3>
                       
-                      {product.description && (
+                      {(product.shortDescription || product.description) && (
                         <p className={`text-gray-600 mb-4 line-clamp-3 leading-relaxed ${viewMode === 'grid' ? 'text-sm' : 'text-base'}`}>
-                          {product.description}
+                          {product.shortDescription || product.description}
                         </p>
                       )}
 
+                      {/* Technical Info */}
+                      <div className="flex items-center space-x-4 mb-3 text-sm text-gray-500">
+                        <span>SKU: {product.sku}</span>
+                        {product.unit && product.unit !== 'piece' && (
+                          <span>Unit: {product.unit}</span>
+                        )}
+                        {product.minOrderQuantity && product.minOrderQuantity > 1 && (
+                          <span>Min Order: {product.minOrderQuantity}</span>
+                        )}
+                      </div>
+
                       <div className={`text-blue-600 font-bold mb-4 ${viewMode === 'grid' ? 'text-xl' : 'text-2xl'}`}>
                         AED {parseFloat(product.price).toFixed(2)}
+                        {product.unit && product.unit !== 'piece' && (
+                          <span className="text-sm text-gray-500 ml-1">
+                            /{product.unit}
+                          </span>
+                        )}
                         {product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price) && (
                           <span className="ml-2 text-sm text-gray-500 line-through">
                             AED {parseFloat(product.originalPrice).toFixed(2)}

@@ -50,7 +50,7 @@ const Logo: React.FC<LogoProps> = ({
     </div>
   );
 
-  if (href) {
+  if (href && href !== '') {
     return (
       <Link href={href} className={`flex items-center justify-center ${className}`}>
         <LogoImage />
