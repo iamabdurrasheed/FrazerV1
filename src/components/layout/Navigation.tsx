@@ -19,6 +19,7 @@ const Navigation: React.FC = () => {
   const navItems = [
     { name: 'Home', href: '/' },
     { name: 'Products', href: '/products' },
+    { name: 'Categories', href: '/categories' },
     { name: 'About Us', href: '/about' },
     { name: 'Contact', href: '/contact' }
   ];
@@ -48,7 +49,7 @@ const Navigation: React.FC = () => {
             <div className="flex items-center">
               {/* Logo */}
               <Link href="/" className="flex-shrink-0 mr-3 transition-transform duration-300 hover:scale-105">
-                <Logo size="nav" />
+                <Logo size="nav" href="" />
               </Link>
               
               {/* Desktop Navigation */}
@@ -244,9 +245,6 @@ const Navigation: React.FC = () => {
                         <div className="mb-4">
                           <h3 className="text-lg font-bold text-gray-900 mb-2">{category.name}</h3>
                           <p className="text-sm text-gray-600">{category.description}</p>
-                          <div className="text-xs text-blue-600 font-medium mt-1">
-                            Price Range: {category.priceRange.min} - {category.priceRange.max} AED
-                          </div>
                         </div>
                         
                         <div className="grid grid-cols-1 gap-2 max-h-80 overflow-y-auto">
@@ -254,16 +252,13 @@ const Navigation: React.FC = () => {
                             <Link
                               key={subcategory.id}
                               href={`/products?category=${category.slug}&subcategory=${subcategory.slug}`}
-                              className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                              className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                             >
                               <div>
                                 <div className="font-medium text-gray-900 text-sm">{subcategory.name}</div>
                                 {subcategory.description && (
                                   <div className="text-xs text-gray-500 mt-1">{subcategory.description}</div>
                                 )}
-                              </div>
-                              <div className="text-xs text-blue-600 font-medium">
-                                {subcategory.priceRange.min} - {subcategory.priceRange.max} AED
                               </div>
                             </Link>
                           ))}
